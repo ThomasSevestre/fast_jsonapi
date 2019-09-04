@@ -167,7 +167,7 @@ RSpec.shared_context 'movie class' do
       attr_accessor :id
     end
 
-    class OwnerSerializer
+    class UserSerializer
       include FastJsonapi::ObjectSerializer
     end
 

@@ -251,7 +251,7 @@ module FastJsonapi
           record_type: options[:record_type] || run_key_transform(base_key_sym),
           object_method_name: options[:object_method_name] || name,
           object_block: block,
-          serializer: compute_serializer_name(options[:serializer] || base_key_sym),
+          serializer: compute_serializer_name(options[:serializer] || options[:record_type] || base_key_sym),
           relationship_type: relationship_type,
           cached: options[:cached],
           polymorphic: fetch_polymorphic_option(options),

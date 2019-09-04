@@ -22,7 +22,7 @@ describe FastJsonapi::ObjectSerializer do
       context 'with overrides' do
         let(:children) { [:roles, id_method_name: :roles_only_ids, record_type: :super_role] }
 
-        it_behaves_like 'returning correct relationship hash', :'AppName::V1::RoleSerializer', :roles_only_ids, :super_role
+        it_behaves_like 'returning correct relationship hash', :'AppName::V1::SuperRoleSerializer', :roles_only_ids, :super_role
       end
 
       context 'without overrides' do
@@ -38,7 +38,7 @@ describe FastJsonapi::ObjectSerializer do
       context 'with overrides' do
         let(:children) { [:roles, id_method_name: :roles_only_ids, record_type: :super_role] }
 
-        it_behaves_like 'returning correct relationship hash', :'RoleSerializer', :roles_only_ids, :super_role
+        it_behaves_like 'returning correct relationship hash', :'SuperRoleSerializer', :roles_only_ids, :super_role
       end
 
       context 'without overrides' do
