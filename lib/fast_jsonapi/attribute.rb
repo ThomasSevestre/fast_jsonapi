@@ -1,5 +1,7 @@
 module FastJsonapi
   class Attribute
+    attr_reader :comment
+
     def initialize(key:, method:, options: {})
       @key = key
       @method = method
@@ -8,6 +10,7 @@ module FastJsonapi
       else
         nil
       end
+      @comment= options[:comment]
     end
 
     def serialize(record, serialization_params, output_hash)
