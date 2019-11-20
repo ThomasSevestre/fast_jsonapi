@@ -16,6 +16,12 @@ module FastJsonapi
 
     SERIALIZABLE_HASH_NOTIFICATION = 'render.fast_jsonapi.serializable_hash'
     SERIALIZED_JSON_NOTIFICATION = 'render.fast_jsonapi.serialized_json'
+    TRANSFORMS_MAPPING = {
+      camel: :camelize,
+      camel_lower: [:camelize, :lower],
+      dash: :dasherize,
+      underscore: :underscore
+    }.freeze
 
     included do
       # Set record_type based on the name of the serializer class
@@ -42,7 +48,7 @@ module FastJsonapi
 
       return serializable_hash unless @resource
 
-      serializable_hash[:data] = self.class.record_hash(@resource, @fieldsets[self.class.record_type.to_sym], @params)
+      serializable_hash[:data] = self.class.record_hash(@resource, @fieldsets[self.class.record_type.to_sym], @includes, @params)
       serializable_hash[:included] = self.class.get_included_records(@resource, @includes, @known_included_objects, @fieldsets, @params) if @includes.present?
       serializable_hash
     end
@@ -54,7 +60,7 @@ module FastJsonapi
       included = []
       fieldset = @fieldsets[self.class.record_type.to_sym]
       @resource.each do |record|
-        data << self.class.record_hash(record, fieldset, @params)
+        data << self.class.record_hash(record, fieldset, @includes, @params)
         included.concat self.class.get_included_records(record, @includes, @known_included_objects, @fieldsets, @params) if @includes.present?
       end
 
@@ -92,9 +98,9 @@ module FastJsonapi
 
     def deep_symbolize(collection)
       if collection.is_a? Hash
-        Hash[collection.map do |k, v|
-          [k.to_sym, deep_symbolize(v)]
-        end]
+        collection.each_with_object({}) do |(k, v), hsh|
+          hsh[k.to_sym] = deep_symbolize(v)
+        end
       elsif collection.is_a? Array
         collection.map { |i| deep_symbolize(i) }
       else
@@ -136,13 +142,7 @@ module FastJsonapi
       end
 
       def set_key_transform(transform_name)
-        mapping = {
-          camel: :camelize,
-          camel_lower: [:camelize, :lower],
-          dash: :dasherize,
-          underscore: :underscore
-        }
-        self.transform_method = mapping[transform_name.to_sym]
+        self.transform_method = TRANSFORMS_MAPPING[transform_name.to_sym]
 
         # ensure that the record type is correctly transformed
         if record_type
@@ -284,14 +284,19 @@ module FastJsonapi
         {}
       end
 
-      def link(link_name, link_method_name = nil, &block)
+      # def link(link_name, link_method_name = nil, &block)
+      def link(*params, &block)
         self.data_links = {} if self.data_links.nil?
-        link_method_name = link_name if link_method_name.nil?
+
+        options = params.last.is_a?(Hash) ? params.pop : {}
+        link_name = params.first
+        link_method_name = params[-1]
         key = run_key_transform(link_name)
 
         self.data_links[key] = Link.new(
           key: key,
-          method: block || link_method_name
+          method: block || link_method_name,
+          options: options
         )
       end
 

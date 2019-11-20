@@ -1,7 +1,6 @@
-<<<<<<< HEAD
 module FastJsonapi
-  class Attribute
-    attr_reader :comment
+  class Scalar
+    attr_reader :key, :method, :conditional_proc, :comment
 
     def initialize(key:, method:, options: {})
       @key = key
@@ -23,11 +22,13 @@ module FastJsonapi
         end
       end
     end
-  end
-=======
-require 'fast_jsonapi/scalar'
 
-module FastJsonapi
-  class Attribute < Scalar; end
->>>>>>> official/master
+    def conditionally_allowed?(record, serialization_params)
+      if @conditional_proc
+        @conditional_proc.call(record, serialization_params)
+      else
+        true
+      end
+    end
+  end
 end
